@@ -52,3 +52,57 @@ class IP {
 		return ($ip);
 	}
 }
+
+/**
+ * 打印错误的详细信息,打印到文件
+ */
+class LOGGER {
+	static private function get_caller_info() {
+		$c = '';
+		$file = '';
+		$func = '';
+		$class = '';
+		$line = '';
+		$trace = debug_backtrace();
+		if (isset($trace[2])) {
+			$file = $trace[1]['file'];
+			$line = $trace[1]['line'];
+			$func = $trace[2]['function'];
+			if ((substr($func, 0, 7) == 'include') || (substr($func, 0, 7) == 'require')) {
+				$func = '';
+			}
+		} else if (isset($trace[1])) {
+			$file = $trace[1]['file'];
+			$line = $trace[1]['line'];
+			$func = '';
+		}
+		if (isset($trace[3]['class'])) {
+			$class = $trace[3]['class'];
+			$func = $trace[3]['function'];
+			$file = $trace[2]['file'];
+			$line = $trace[2]['line'];
+
+		} else if (isset($trace[2]['class'])) {
+			$class = $trace[2]['class'];
+			$func = $trace[2]['function'];
+			$line = $trace[1]['line'];
+
+			$file = $trace[1]['file'];
+		}
+		if ($file != '') {
+			$file = basename($file);
+		}
+
+		$c = $file . ": ";
+		$c .= ($line != '') ? $line : "";
+		$c .= ($class != '') ? ":" . $class . "->" : "";
+		$c .= ($func != '') ? $func . "(): " : "";
+		return ($c);
+	}
+
+	static public function log_server($log_path, $err_msg) {
+		$caller_info = self::get_caller_info();
+		error_log(date('Y-m-d H:i:s') . "|" . $err_msg . "---" . $caller_info . "\n", 3, $log_path);
+	}
+
+}
